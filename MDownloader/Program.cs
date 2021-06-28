@@ -10,6 +10,7 @@ namespace MDownloader
         static void Main(string[] args)
         {
             DownloadLink LINK = new DownloadLink();
+
             //get link info
             string URL = AnsiConsole.Ask<string>("What is the [blue]URL[/]?");
             LINK.URL = URL;
@@ -20,25 +21,20 @@ namespace MDownloader
                 LINK.path = Path.GetFullPath(AnsiConsole.Ask<string>("[green]Download path?[/]"));
             }
 
-
-            if (AnsiConsole.Confirm("[green]Credentials?[/]"))
+            if (AnsiConsole.Confirm("Use [green]Credentials?[/]"))
             {
                 string user = AnsiConsole.Ask<string>("What is the [blue]Username[/]?");
-                string pass = AnsiConsole.Prompt<string>(new TextPrompt<string>("What is the [red]Password[/]?")
+                string pass = AnsiConsole.Prompt(new TextPrompt<string>("What is the [red]Password[/]?")
                     .PromptStyle("red")
                     .Secret()
                     );
                 LINK.Credentials = new System.Net.NetworkCredential(user, pass);
-            }//missing proxy
-
-            var tasks = new (string name, DownloadLink link)[]
-            {
-                (filename, LINK)
-            };
+            }
+            //missing proxy
 
             //Download file
             Downloader Dow = new Downloader();
-            //fixme: not implemented yet
+
             AnsiConsole.Progress()
                 .AutoClear(false)
                 .HideCompleted(false)
@@ -51,12 +47,10 @@ namespace MDownloader
                 })
                 .StartAsync(async ctx =>
                 {
-                    await Dow.DownloadAsync(LINK);
-
                     var task = ctx.AddTask("Download [link=" + URL + "]" + filename + "[/]");
-
+                    await Dow.DownloadAsync(LINK, task);
                 });
-            
+            Console.ReadLine();
         }
     }
 }

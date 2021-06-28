@@ -10,11 +10,15 @@ namespace MDownloader
 {
     public class Downloader
     {
-        public async Task DownloadAsync(DownloadLink L)
+        private ProgressTask task;
+
+        public async Task DownloadAsync(DownloadLink L, ProgressTask taskin)
         {
             //URL to URI
             Uri URI = new Uri(L.URL);
             //Get downloads folder path
+
+            task = taskin;
 
             if (URI.IsFile)
             {
@@ -22,26 +26,33 @@ namespace MDownloader
 
                 WebClient Wc = new WebClient()
                 {
-                    Credentials = L.Credentials,
-                    Proxy = L.Proxy
+                    Credentials = L.Credentials
                 };
-                //Wc.DownloadProgressChanged += Wc_DownloadProgressChanged;
+                Wc.DownloadProgressChanged += Wc_DownloadProgressChanged;
                 //Wc.DownloadFileCompleted += Wc_DownloadFileCompleted;
-                Wc.DownloadFileAsync(URI, L.path + filename);
+                try
+                {
+                    await Wc.DownloadFileTaskAsync(URI, Path.Combine(L.path, filename));
+                }
+                catch (Exception ex)
+                {
+                    AnsiConsole.WriteException(ex);
+                }
             }
         }
 
-        public float percentage = 0f;
-
         private void Wc_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
         {
-            throw new NotImplementedException();
+            AnsiConsole.Render(
+                new FigletText("Done!")
+                    .LeftAligned()
+                    .Color(Color.Green));
         }
 
         private void Wc_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
-            throw new NotImplementedException();
-            percentage = (float)e.ProgressPercentage;
+            task.MaxValue = e.TotalBytesToReceive;
+            task.Increment(e.BytesReceived);
         }
     }
 
@@ -49,14 +60,12 @@ namespace MDownloader
     {
         public string URL;
 
-        public string URI;
-
         public NetworkCredential Credentials;
 
         public IWebProxy Proxy;
 
         public string path = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), 
-            "Downloads");
+            "Downloads/");
     }
 }
