@@ -8,31 +8,55 @@ namespace MDownloader
     {
         static void Main(string[] args)
         {
-
-
             DownloadLink LINK = new DownloadLink();
             //get link info
-            LINK.URL = AnsiConsole.Ask<string>("What is the [blue]URL[/]?");
+            string URL = AnsiConsole.Ask<string>("What is the [blue]URL[/]?");
+            LINK.URL = URL;
+            string filename = Path.GetFileName(new Uri(URL).LocalPath);
+
             if (!AnsiConsole.Confirm("Download to [green]Downloads Folder?[/]"))
             {
                 LINK.path = Path.GetFullPath(AnsiConsole.Ask<string>("[green]Download path?[/]"));
-            }//missing credentials and proxy
+            }
+
+
+            if (AnsiConsole.Confirm("[green]Credentials?[/]"))
+            {
+                string user = AnsiConsole.Ask<string>("What is the [blue]Username[/]?");
+                string pass = AnsiConsole.Prompt<string>(new TextPrompt<string>("What is the [red]Password[/]?")
+                    .PromptStyle("red")
+                    .Secret()
+                    );
+                LINK.Credentials = new System.Net.NetworkCredential(user, pass);
+            }//missing proxy
+            
 
             //Download file
             Downloader Dow = new Downloader();
             //fixme: not implemented yet
             AnsiConsole.Progress()
-                .Start(ctx =>
+                .AutoClear(false)
+                .HideCompleted(false)
+                .Columns(new ProgressColumn[]
                 {
-                    // Define tasks
-                    var task1 = ctx.AddTask("[green]Downloading[/]");
+                    new ProgressBarColumn(),
+                    new PercentageColumn(),
+                    new RemainingTimeColumn(),
+                    new SpinnerColumn()
+                })
+                .StartAsync(async ctx =>
+                {
+                    var task = ctx.AddTask("Download [link=" + URL + "]" + filename + "[/]");
 
-                    while (!ctx.IsFinished)
+                    while(!ctx.IsFinished)
                     {
-                        task1.Increment(1.5);
+                        //cannot await void
+                        await Dow.DownloadAsync(LINK);
+                        
+                        task.Increment(0.1);
                     }
                 });
-            Dow.DownloadAsync(LINK);
+            
         }
     }
 }

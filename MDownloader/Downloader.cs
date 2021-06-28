@@ -25,11 +25,13 @@ namespace MDownloader
                     Credentials = L.Credentials,
                     Proxy = L.Proxy
                 };
-                Wc.DownloadProgressChanged += Wc_DownloadProgressChanged;
-                Wc.DownloadFileCompleted += Wc_DownloadFileCompleted;
+                //Wc.DownloadProgressChanged += Wc_DownloadProgressChanged;
+                //Wc.DownloadFileCompleted += Wc_DownloadFileCompleted;
                 Wc.DownloadFileAsync(URI, L.path + filename);
             }
         }
+
+        public float percentage = 0f;
 
         private void Wc_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
         {
@@ -39,6 +41,7 @@ namespace MDownloader
         private void Wc_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
             throw new NotImplementedException();
+            percentage = (float)e.ProgressPercentage;
         }
     }
 
@@ -46,7 +49,9 @@ namespace MDownloader
     {
         public string URL;
 
-        public ICredentials Credentials;
+        public string URI;
+
+        public NetworkCredential Credentials;
 
         public IWebProxy Proxy;
 
