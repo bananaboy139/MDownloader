@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Spectre.Console;
+using System.Threading.Tasks;
 
 namespace MDownloader
 {
@@ -29,7 +30,11 @@ namespace MDownloader
                     );
                 LINK.Credentials = new System.Net.NetworkCredential(user, pass);
             }//missing proxy
-            
+
+            var tasks = new (string name, DownloadLink link)[]
+            {
+                (filename, LINK)
+            };
 
             //Download file
             Downloader Dow = new Downloader();
@@ -46,15 +51,10 @@ namespace MDownloader
                 })
                 .StartAsync(async ctx =>
                 {
+                    await Dow.DownloadAsync(LINK);
+
                     var task = ctx.AddTask("Download [link=" + URL + "]" + filename + "[/]");
 
-                    while(!ctx.IsFinished)
-                    {
-                        //cannot await void
-                        await Dow.DownloadAsync(LINK);
-                        
-                        task.Increment(0.1);
-                    }
                 });
             
         }

@@ -5,12 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using Spectre.Console;
 namespace MDownloader
 {
     public class Downloader
     {
-        public void DownloadAsync(DownloadLink L)
+        public async Task DownloadAsync(DownloadLink L)
         {
             //URL to URI
             Uri URI = new Uri(L.URL);
